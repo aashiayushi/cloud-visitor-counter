@@ -1,0 +1,58 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: visitor-counter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: visitor-counter
+  template:
+    metadata:
+      labels:
+        app: visitor-counter
+    spec:
+      containers:
+        - name: visitor-counter
+          image: visitorcounterayu26.azurecr.io/visitor-counter:1.0
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: REDIS_URL
+              value: redis://redis:6379
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: visitor-counter
+spec:
+  selector:
+    app: visitor-counter
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: ClusterIP
+

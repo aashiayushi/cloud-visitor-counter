@@ -1,0 +1,49 @@
+
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: visitor-counter:1.0
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - visitor-network
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - visitor-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  visitor-network:
+    driver: bridge
+
+volumes:
+  redis-data:

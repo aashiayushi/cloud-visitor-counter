@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
+service-account*.json
+
+# Git and editor files
+.git/
+.vscode/
+.idea/
+
+# Logs and temporary files
+npm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Local configuration
+.kube/
+kubeconfig
+service-patch.json
